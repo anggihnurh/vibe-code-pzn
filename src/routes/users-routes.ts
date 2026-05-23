@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { registerUser, loginUser } from "../services/users-service";
+import { registerUser, loginUser, logoutUser } from "../services/users-service";
 
 export const usersRoutes = new Elysia({ prefix: "/api" })
   .post("/users", async ({ body, set }) => {
@@ -34,4 +34,26 @@ export const usersRoutes = new Elysia({ prefix: "/api" })
       email: t.String(),
       password: t.String(),
     }),
+  })
+  .delete("/users/logout", async ({ headers, set }) => {
+    try {
+      // Ambil header Authorization
+      const authHeader = headers.authorization;
+      
+      // Validasi apakah header ada
+      if (!authHeader) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      // Extract token (hapus "Bearer " dari depan)
+      const token = authHeader.replace("Bearer ", "");
+
+      // Panggil service untuk logout
+      const response = await logoutUser(token);
+      return response;
+    } catch (error: any) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
   });

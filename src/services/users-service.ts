@@ -53,3 +53,11 @@ export const loginUser = async (data: any) => {
 
   return { data: token };
 };
+
+export const logoutUser = async (token: string) => {
+  // 1. Hapus session dari database berdasarkan token
+  await db.delete(sessions).where(eq(sessions.token, token));
+
+  // 2. Return response sukses
+  return { data: "OK" };
+};
