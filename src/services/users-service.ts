@@ -2,7 +2,18 @@ import { db } from "../db";
 import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 
-export const registerUser = async (data: any) => {
+interface RegisterUserData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface LoginUserData {
+  email: string;
+  password: string;
+}
+
+export const registerUser = async (data: RegisterUserData) => {
   const { name, email, password } = data;
 
   // 1. Cek apakah email sudah terdaftar
@@ -27,7 +38,7 @@ export const registerUser = async (data: any) => {
   return { data: "OK" };
 };
 
-export const loginUser = async (data: any) => {
+export const loginUser = async (data: LoginUserData) => {
   const { email, password } = data;
 
   // 1. Cari user berdasarkan email
@@ -55,9 +66,19 @@ export const loginUser = async (data: any) => {
 };
 
 export const logoutUser = async (token: string) => {
-  // 1. Hapus session dari database berdasarkan token
+  // 1. Cek apakah session dengan token tersebut ada
+  const existingSession = await db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.token, token));
+
+  if (existingSession.length === 0) {
+    throw new Error("Invalid or expired token");
+  }
+
+  // 2. Hapus session dari database
   await db.delete(sessions).where(eq(sessions.token, token));
 
-  // 2. Return response sukses
+  // 3. Return response sukses
   return { data: "OK" };
 };

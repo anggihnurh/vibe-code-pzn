@@ -46,8 +46,20 @@ export const usersRoutes = new Elysia({ prefix: "/api" })
         return { error: "Unauthorized" };
       }
 
-      // Extract token (hapus "Bearer " dari depan)
-      const token = authHeader.replace("Bearer ", "");
+      // Validasi format Bearer token
+      if (!authHeader.startsWith("Bearer ")) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      // Extract token (ambil setelah "Bearer " = 7 karakter)
+      const token = authHeader.substring(7).trim();
+
+      // Validasi token tidak kosong
+      if (!token) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
 
       // Panggil service untuk logout
       const response = await logoutUser(token);
